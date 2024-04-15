@@ -1,4 +1,4 @@
-from connect_four import ConnectFour
+from MNKGame import AbstractMNKGame, ConnectFour
 
 game = ConnectFour()
 game.start_game()
