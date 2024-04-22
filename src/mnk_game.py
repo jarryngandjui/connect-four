@@ -1,5 +1,6 @@
 import logging
 import math
+from os import walk
 from typing import List, Tuple
 
 
@@ -30,10 +31,12 @@ class AbstractMNKGame():
         self.board = [0] * self.column_max
         self.moves = {p: [] for p in AbstractMNKGame.PLAYERS}
         self.player = AbstractMNKGame.PLAYER_1
-        self.moves_count_total = 0
-        self.is_game_won = False
-        self.is_game_full = False
-        self.is_game_over = False
+        self.moves_count = 0
+        self.is_won = False
+        self.is_tied = False
+        self.is_full = False
+        self.is_over = False
+        self.winner = None
 
     def get_player_moves(self, player) -> List[Tuple[int, int]]:
         return self.moves.get(player, [])
@@ -41,8 +44,8 @@ class AbstractMNKGame():
     def get_column_options(self) -> List[int]:
         return [c for c in range(self.column_max) if self.board[c] < self.row_max]
 
-    def get_next_player(self, player: str) -> str:
-        return AbstractMNKGame.PLAYER_2 if player == AbstractMNKGame.PLAYER_1 else AbstractMNKGame.PLAYER_1
+    def next_player(self):
+        self.player = AbstractMNKGame.PLAYER_2 if self.player == AbstractMNKGame.PLAYER_1 else AbstractMNKGame.PLAYER_1
 
     def get_move(self) -> Tuple[int, int]:
         move = None
@@ -58,13 +61,16 @@ class AbstractMNKGame():
         return move
 
     def play(self, move: Tuple[int, int]):
-        assert move[0] in self.get_column_options()
+        column_options = self.get_column_options()
+        assert move[0] in column_options, f'Bad move {move}, please select from {column_options}.' 
         self.get_player_moves(self.player).append(move)
         self.board[move[0]] += 1
-        self.moves_count_total += 1
-        self.is_game_won = self.is_connected(move)
-        self.is_game_full = self.moves_count_total >= self.column_max * self.row_max
-        self.is_game_over = self.is_game_full or self.is_game_won
+        self.moves_count += 1
+        self.is_full = self.moves_count >= self.column_max * self.row_max
+        self.is_won = self.is_connected(move)
+        self.winner = self.player if self.is_won else None
+        self.is_tied = self.is_full and not self.is_won 
+        self.is_over = self.is_tied or self.is_won
 
     def is_connected(self, move: Tuple[int, int]) -> bool:
         player_moves = self.get_player_moves(self.player) 
@@ -83,6 +89,9 @@ class AbstractMNKGame():
         player_moves = sorted(player_moves, key=lambda m: m[0])
         connected_plays = 1
 
+        if not len(player_moves) >= self.target:
+            return False
+
         for i in range(len(player_moves)-1):
             if player_moves[i][0]+1 == player_moves[i+1][0]:
                 connected_plays += 1
@@ -97,6 +106,9 @@ class AbstractMNKGame():
         player_moves = sorted(player_moves, key=lambda m: m[1])
         connected_plays = 1
 
+        if not len(player_moves) >= self.target:
+            return False
+
         for i in range(len(player_moves)-1):
             if player_moves[i][1]+1 == player_moves[i+1][1]:
                 connected_plays += 1
@@ -107,9 +119,12 @@ class AbstractMNKGame():
         return False
 
     def is_diagonally_connected(self, move: Tuple[int, int], player_moves: List[Tuple[int, int]]=[]) -> bool:
-        player_moves = list(filter(lambda m: m[1]-move[1]==m[0]-move[0], player_moves))
+        player_moves = list(filter(lambda m: abs(m[1]-move[1])==abs(m[0]-move[0]), player_moves))
         player_moves = sorted(player_moves, key=lambda m: (m[0], m[1]))
         connected_plays = 1
+
+        if not len(player_moves) >= self.target:
+            return False
 
         for i in range(len(player_moves)-1):
             if (
@@ -123,31 +138,18 @@ class AbstractMNKGame():
                 return True
         return False
 
-    def start_game(self):
+    def display_start(self):
         logging.info('Starting a game of %s with board size', self.name)
         logging.info('Creating of a board size of %sx%s', self.column_max, self.row_max)
         logging.info('First to connect %s wins...', self.target)
         self.display_board()
 
-        try:
-            while not self.is_game_over:
-                move = self.get_move()
-                self.play(move)
-                self.display_board()
-                self.compute_state()
-        except KeyboardInterrupt:
-            logging.info('Exiting %s game', self.name)
-
-    def compute_state(self):
-        if self.is_game_won:
-            logging.info('Congratulations %s is the winner in %s moves.', self.player, self.moves_count_total)
-        elif self.is_game_full:
-            logging.info('Too bad the game is tied after %s moves.', self.moves_count_total)
-        else:
-            self.player = self.get_next_player(self.player)
-
     def display_board(self):
-        logging.info('Board after %s moves by players %s', self.moves_count_total, AbstractMNKGame.PLAYERS)
+        logging.info('Board after %s moves by players %s', self.moves_count, AbstractMNKGame.PLAYERS)
+        logging.info('Game is over: %s', self.is_over)
+        logging.info('Game is tied: %s', self.is_tied)
+        logging.info('Game is won: %s', self.is_won)
+        logging.info('Game winner: %s', self.winner)
         for row in range(self.row_max - 1, -1, -1):
             line = "|"
             for col in range(self.column_max):
@@ -163,8 +165,18 @@ class AbstractMNKGame():
         for col in range(self.column_max):
             column_numbers += f" {col} |"
         logging.info(column_numbers)
+        
 
+    def __copy__(self):
+        new_instance = self.__class__(self.row_max, self.column_max, self.target, self.name)
+        new_instance.board = self.board.copy()
+        new_instance.moves = {k: v.copy() for k, v in self.moves.items()}
+        new_instance.player = self.player
+        new_instance.moves_count = self.moves_count
+        new_instance.is_won = self.is_won
+        new_instance.is_tied = self.is_tied
+        new_instance.is_full = self.is_full
+        new_instance.is_over = self.is_over
+        new_instance.winner = self.winner
+        return new_instance
 
-class ConnectFour(AbstractMNKGame):
-    def __init__(self):
-        super().__init__(m=6, n=7, k=4, name='Connect Four')

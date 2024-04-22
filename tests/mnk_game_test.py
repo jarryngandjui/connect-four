@@ -1,5 +1,5 @@
 from unittest import TestCase
-from MNKGame import AbstractMNKGame, ConnectFour
+from src.mnk_game import AbstractMNKGame, ConnectFour
 
 
 class TestConnectFour(TestCase):
@@ -8,8 +8,8 @@ class TestConnectFour(TestCase):
         self.assertEqual(len(game.board), game.column_max)
         self.assertEqual(len(game.moves[AbstractMNKGame.PLAYER_1]), 0)
         self.assertEqual(len(game.moves[AbstractMNKGame.PLAYER_2]), 0)
-        self.assertEqual(game.moves_count_total, 0)
-        self.assertFalse(game.is_game_over)
+        self.assertEqual(game.moves_count, 0)
+        self.assertFalse(game.is_over)
 
     def test_generic_mnk_game(self):
         connect_three_game = AbstractMNKGame(m=4, n=5, k=3)
@@ -18,8 +18,8 @@ class TestConnectFour(TestCase):
         self.assertEqual(connect_three_game.row_max, 4)
         self.assertEqual(len(connect_three_game.moves[AbstractMNKGame.PLAYER_1]), 0)
         self.assertEqual(len(connect_three_game.moves[AbstractMNKGame.PLAYER_2]), 0)
-        self.assertEqual(connect_three_game.moves_count_total, 0)
-        self.assertFalse(connect_three_game.is_game_over)
+        self.assertEqual(connect_three_game.moves_count, 0)
+        self.assertFalse(connect_three_game.is_over)
 
         connect_three_game.moves[connect_three_game.player] = [(1, 1), (2, 1), (3, 1)]
         self.assertTrue(connect_three_game.is_connected((3, 1)))
@@ -31,9 +31,9 @@ class TestConnectFour(TestCase):
     def test_get_next_player(self):
         game = ConnectFour()
         self.assertEqual(game.player, AbstractMNKGame.PLAYER_1)
-        game.player = game.get_next_player(game.player)
+        game.next_player()
         self.assertEqual(game.player, AbstractMNKGame.PLAYER_2)
-        game.player = game.get_next_player(game.player)
+        game.next_player()
         self.assertEqual(game.player, AbstractMNKGame.PLAYER_1)
 
     def test_is_connected_horizontally(self):
@@ -83,3 +83,8 @@ class TestConnectFour(TestCase):
         # Test diagonal connection with slope -1
         game.moves[game.player] = [(3, 3), (2, 2), (1, 1), (0, 0)]
         self.assertTrue(game.is_connected((3, 3)))
+
+        # Test diagonal connection with slope -1
+        game.moves[game.player] = [(5, 0), (4, 1), (3, 2), (2, 3)]
+        self.assertTrue(game.is_connected((2, 3)))
+
