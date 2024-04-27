@@ -1,8 +1,10 @@
 from unittest import TestCase
-from src.mnk_game import AbstractMNKGame, ConnectFour
+
+from src.connect_four_game import ConnectFour
+from src.mnk_game import AbstractMNKGame
 
 
-class TestConnectFour(TestCase):
+class ConnectFourTestCase(TestCase):
     def test_initialization(self):
         game = ConnectFour()
         self.assertEqual(len(game.board), game.column_max)
@@ -87,4 +89,3 @@ class TestConnectFour(TestCase):
         # Test diagonal connection with slope -1
         game.moves[game.player] = [(5, 0), (4, 1), (3, 2), (2, 3)]
         self.assertTrue(game.is_connected((2, 3)))
-

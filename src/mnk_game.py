@@ -1,6 +1,5 @@
 import logging
 import math
-from os import walk
 from typing import List, Tuple
 
 
@@ -45,7 +44,10 @@ class AbstractMNKGame():
         return [c for c in range(self.column_max) if self.board[c] < self.row_max]
 
     def next_player(self):
-        self.player = AbstractMNKGame.PLAYER_2 if self.player == AbstractMNKGame.PLAYER_1 else AbstractMNKGame.PLAYER_1
+        self.player = self.get_next_player()
+
+    def get_next_player(self) -> str:
+        return AbstractMNKGame.PLAYER_2 if self.player == AbstractMNKGame.PLAYER_1 else AbstractMNKGame.PLAYER_1
 
     def get_move(self) -> Tuple[int, int]:
         move = None
@@ -165,7 +167,6 @@ class AbstractMNKGame():
         for col in range(self.column_max):
             column_numbers += f" {col} |"
         logging.info(column_numbers)
-        
 
     def __copy__(self):
         new_instance = self.__class__(self.row_max, self.column_max, self.target, self.name)
@@ -179,4 +180,3 @@ class AbstractMNKGame():
         new_instance.is_over = self.is_over
         new_instance.winner = self.winner
         return new_instance
-

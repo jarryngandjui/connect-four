@@ -10,8 +10,10 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Connect Four game with player options.")
     parser.add_argument('--players', type=int, choices=[1, 2], default=2,
                         help="Number of players (1 or 2). Default is 2.")
-    parser.add_argument('--simulation_count', type=int, default=10,
-                        help="Number of simulations for Monte Carlo Tree Search. Must be an integer greater than 2. Default is 10.")
+    parser.add_argument('--simulation_count', type=int, default=30,
+                        help="Number of simulations at each node of the Monte Carlo Tree Search.")
+    parser.add_argument('--explore_depth', type=int, default=30,
+                        help="Forecast moves ahead in the Monte Carlo Tree Search")
     return parser.parse_args()
 
 
@@ -20,7 +22,7 @@ def main():
     game = ConnectFour()
 
     if args.players == 1:
-        game.start_one_player(simulation_count=args.simulation_count) 
+        game.start_one_player(simulation_count=args.simulation_count, explore_depth=args.explore_depth)
     else:
         game.start_two_players()
 

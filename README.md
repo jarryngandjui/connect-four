@@ -14,6 +14,11 @@ The game should support two players (X, O) until there is one winner. Connect fo
 ## Get started 
 
 - Clone locally, uses default python3 packages so it has no dependencies.
-- Play 1 player vs. bot: `python main.py --players 1 --simulation_count 10`. Increase `SIMULATION_COUNT` for a more competitive game.
-- Play 2 players: `python main.py --players 2`
-- Run tests `pytest tests/__test_name__`
+- Play 1 player vs. bot
+  - `python main.py --players 1`
+  - optionally provide `--simulation_count N` to control the competitiveness of the bot, default is 30.
+  - optionally provide `--explore_depth N` to control how many moves ahead the bot forcasts, default is 30.
+- Play 2 players
+  - `python main.py --players 2`
+- Run tests
+  - `pytest tests/__test_name__`
