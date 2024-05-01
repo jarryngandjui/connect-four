@@ -1,6 +1,9 @@
+import json
 import logging
 import math
+import os
 from typing import List, Tuple
+from uuid import uuid4
 
 
 logging.basicConfig(level=logging.INFO)
@@ -14,9 +17,11 @@ class AbstractMNKGame():
     horizontally, vertically, or diagonally.
     '''
 
+
     PLAYER_1 = 'X'
     PLAYER_2 = 'O'
     PLAYERS = [PLAYER_1, PLAYER_2]
+    EXPORT_DIR = 'export'
 
     def __init__(self, m: int, n: int, k: int, name: str =''):
         assert k > 1, 'Players must win in at least 2 connected moves'
@@ -167,6 +172,51 @@ class AbstractMNKGame():
         for col in range(self.column_max):
             column_numbers += f" {col} |"
         logging.info(column_numbers)
+
+    def export(self) -> str:
+        filename = f'{uuid4()}.json'
+        game_data = {
+            'name': self.name,
+            'row_max': self.row_max,
+            'column_max': self.column_max,
+            'target': self.target,
+            'board': self.board,
+            'moves': self.moves,
+            'player': self.player,
+            'moves_count': self.moves_count,
+            'is_won': self.is_won,
+            'is_tied': self.is_tied,
+            'is_full': self.is_full,
+            'is_over': self.is_over,
+            'winner': self.winner
+        }
+        with open(os.path.join(AbstractMNKGame.EXPORT_DIR, filename), 'w') as f:
+            json.dump(game_data, f, indent=4)
+        return filename
+
+    @classmethod
+    def from_export(cls, filename) -> 'AbstractMNKGame':
+        filepath = os.path.join(cls.EXPORT_DIR, filename)
+        with open(filepath, 'r') as f:
+            data = json.load(f)
+        game = cls()
+        game.name = data['name']
+        game.row_max = data['row_max']
+        game.column_max = data['column_max']
+        game.target = data['target']
+        game.board = data['board']
+        game.player = data['player']
+        game.moves_count = data['moves_count']
+        game.is_won = data['is_won']
+        game.is_tied = data['is_tied']
+        game.is_full = data['is_full']
+        game.is_over = data['is_over']
+        game.winner = data['winner']
+        game.moves = {}
+        for p, moves in data['moves'].items():
+            moves = [(m[0], m[1]) for m in moves]
+            game.moves[p] = moves
+        return game
 
     def __copy__(self):
         new_instance = self.__class__(self.row_max, self.column_max, self.target, self.name)
