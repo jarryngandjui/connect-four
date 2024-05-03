@@ -6,16 +6,20 @@ The game should support two players (X, O) until there is one winner. Connect fo
 
 ## Features
 
-- Play abstract m-n-k games where users can win vertically, horizontally, and diagonally.
-- 2 players locally.
-- 1 player vs. bot opponent that uses a Monte Carlo Tree Search to pick the next move.
+- ConnectFour 1 player vs. bot opponent that uses a Monte Carlo Tree Search to pick the next move
+- ConnectFour 2 players locally
+- In game audio
 - Export the game state
 - Replay a game state
-- Unit tests.
+- Extend to abstract m-n-k games
+- Unit tests
 
 ## Get started 
 
 - Clone locally, uses default python3 packages so it has no dependencies.
+- Create a virtual env `python -m venv venv`
+- Activate the virtual env `source ./venv/bin/activate`
+- Install requirements `pip install -r requirements.txt`
 - Play 1 player vs. bot
   - `python main.py --players 1`
   - optional arg `--simulation_count N` to control the competitiveness of the bot, default is 30.

@@ -1,12 +1,11 @@
 from unittest import TestCase
 
-from src.connect_four_game import ConnectFour
 from src.mnk_game import AbstractMNKGame
 
 
-class ConnectFourTestCase(TestCase):
+class TestAbstractMNKGame(TestCase):
     def test_initialization(self):
-        game = ConnectFour()
+        game = AbstractMNKGame(m=6, n=7, k=4)
         self.assertEqual(len(game.board), game.column_max)
         self.assertEqual(len(game.moves[AbstractMNKGame.PLAYER_1]), 0)
         self.assertEqual(len(game.moves[AbstractMNKGame.PLAYER_2]), 0)
@@ -31,7 +30,7 @@ class ConnectFourTestCase(TestCase):
         self.assertTrue(connect_three_game.is_connected((1, 0)))
 
     def test_get_next_player(self):
-        game = ConnectFour()
+        game = AbstractMNKGame(m=6, n=7, k=4)
         self.assertEqual(game.player, AbstractMNKGame.PLAYER_1)
         game.next_player()
         self.assertEqual(game.player, AbstractMNKGame.PLAYER_2)
@@ -39,7 +38,7 @@ class ConnectFourTestCase(TestCase):
         self.assertEqual(game.player, AbstractMNKGame.PLAYER_1)
 
     def test_is_connected_horizontally(self):
-        game = ConnectFour()
+        game = AbstractMNKGame(m=6, n=7, k=4)
         # Test inline and ordered
         game.moves[game.player] = [(0, 1), (1, 1), (2, 1), (3, 1)]
         self.assertTrue(game.is_connected((3, 1)))
@@ -54,7 +53,7 @@ class ConnectFourTestCase(TestCase):
         self.assertTrue(game.is_connected((2, 3)))
 
     def test_is_connected_vertically(self):
-        game = ConnectFour()
+        game = AbstractMNKGame(m=6, n=7, k=4)
         # Test inline and ordered
         game.moves[game.player] = [(0, 1), (0, 2), (0, 3), (0, 4)]
         self.assertTrue(game.is_connected((0, 4)))
@@ -69,7 +68,7 @@ class ConnectFourTestCase(TestCase):
         self.assertTrue(game.is_connected((0, 5)))
 
     def test_is_connected_diagonally(self):
-        game = ConnectFour()
+        game = AbstractMNKGame(m=6, n=7, k=4)
         # Test diagonal connection with slope 1
         game.moves[game.player] = [(0, 0), (1, 1), (2, 2), (3, 3)]
         self.assertTrue(game.is_connected((3, 3)))

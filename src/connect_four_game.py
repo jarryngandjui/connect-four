@@ -1,4 +1,9 @@
 import logging
+import os
+import pygame
+import time
+
+from typing import Callable, Tuple
 
 from src.monte_carlo_bot import MonteCarloBot
 from src.mnk_game import AbstractMNKGame
@@ -13,83 +18,142 @@ class ConnectFourException(Exception):
 
 class ConnectFour(AbstractMNKGame):
     NAME = 'Connect Four'
+    IN_GAME_AUDIO = os.path.join('audio', 'in_game.mp3')
+    GAME_OVER_AUDIO = os.path.join('audio', 'game_over.mp3')
+    MOVE_AUDIO = os.path.join('audio', 'move.mp3')
 
-    def __init__(self, should_export: bool = False):
+    def __init__(self, should_export: bool = False, has_volume: bool = True):
         super().__init__(m=6, n=7, k=4, name=ConnectFour.NAME)
         self.should_export = should_export
+        self.has_volume = has_volume
+
+    @classmethod
+    def play_in_game_audio(cls):
+        time.sleep(0.5)
+        pygame.mixer.init()
+        pygame.mixer.music.load(ConnectFour.IN_GAME_AUDIO)
+        pygame.mixer.music.play()
+
+    @classmethod
+    def play_game_over_audio(cls):
+        pygame.mixer.init()
+        pygame.mixer.music.load(ConnectFour.GAME_OVER_AUDIO)
+        pygame.mixer.music.play()
+        time.sleep(2)
+
+    @classmethod
+    def play_move_audio(cls):
+        pygame.mixer.init()
+        pygame.mixer.music.load(ConnectFour.MOVE_AUDIO)
+        pygame.mixer.music.play()
+
+    @classmethod
+    def stop_audio(cls):
+        pygame.mixer.music.stop()
 
     def start_one_player(
         self,
         simulation_count: int = MonteCarloBot.SIMULATION_COUNT,
         explore_depth: int = MonteCarloBot.EXPLORE_DEPTH,
     ):
+        def move_callback():
+            if self.player == AbstractMNKGame.PLAYER_1:
+                return self._get_input_move()
+            else:
+                return self._get_bot_move(
+                    simulation_count=simulation_count,
+                    explore_depth=explore_depth)
+
         logging.info('Starting a 1 player ConnectFour game against MonteCarloBot')
-        self.display_start()
-        try:
-            while not self.is_over:
-                if self.player == AbstractMNKGame.PLAYER_1:
-                    move = self.get_move()
-                else:
-                    move = MonteCarloBot(game=self, simulation_count=simulation_count, explore_depth=explore_depth).get_move()
-                    if not move:
-                        logging.warn('Failed to get an AI bot move')
-                        continue
-                self.play(move)
-                self.display_board()
-                self.compute_state()
-        except (KeyboardInterrupt, ConnectFourException):
-            logging.info('Exiting %s game', self.name)
+        self._live_game(move_callback)
 
     def start_two_players(self):
         logging.info('Starting a 2 player ConnectFour game')
-        self.display_start()
+        self._live_game(self._get_input_move)
+
+    @classmethod
+    def start_game_replay(cls, filename: str, debug=False, should_export=False):
+        var_replay = None
+        try:
+            var_replay = cls.from_export(filename)
+        except Exception:
+            logging.info('Expected %s game from export game - %s', ConnectFour.NAME, filename)
+            return
+
+        live_replay = cls(should_export=should_export, has_volume=False)
+
+        def move_callback():
+            move_i = len(live_replay.moves[live_replay.player])
+            if debug:
+                input('Press Enter to continue...\n')
+            if len(var_replay.moves[live_replay.player]) <= move_i:
+                logging.info('Player %s is out of moves', live_replay)
+                return None
+            return var_replay.moves[live_replay.player][move_i]
+
+        logging.info('Starting a VAR replay for the ConnectFour game export - %s', filename)
+        live_replay._live_game(move_callback)
+
+    def _live_game(self, move_callback: Callable):
+        self.start()
         try:
             while not self.is_over:
-                move = self.get_move()
-                self.play(move)
+                logging.info('%s please enter your next move from options: %s', self.player, self.get_column_options())
+                if self.has_volume:
+                    ConnectFour.play_in_game_audio()
+                self.play(move_callback())
+                if self.has_volume:
+                    ConnectFour.play_move_audio()
                 self.display_board()
-                self.compute_state()
+                self._compute_state()
         except KeyboardInterrupt:
             logging.info('Exiting %s game', self.name)
 
-    @classmethod
-    def replay_game(cls, filename: str, debug=False, should_export=False):
-        logging.info('Starting a VAR replay for the ConnectFour game export - %s', filename)
-        var_game = None
-        try:
-            var_game = cls.from_export(filename)
-            assert var_game.name == ConnectFour.NAME
-        except Exception:
-            logging.info('Expected %s game from filename %s', ConnectFour.NAME, filename)
-            return
+        if self.has_volume:
+            ConnectFour.play_game_over_audio()
+            ConnectFour.stop_audio()
 
-        live_replay = cls(should_export=should_export)
-        try:
-            while not live_replay.is_over:
-                player_move_count = len(live_replay.moves[live_replay.player])
-                if len(var_game.moves[live_replay.player]) <= player_move_count:
-                    logging.info('Player %s is out of moves', live_replay)
-                    break
-                if debug:
-                    input("Press Enter to continue...")
-                move = var_game.moves[live_replay.player][player_move_count]
-                live_replay.play(move)
-                live_replay.display_board()
-                live_replay.compute_state()
-        except KeyboardInterrupt:
-            logging.info('Exiting %s game', live_replay.name)
+    def _get_input_move(self) -> Tuple[int, int]:
+        move = None
+        column_options = self.get_column_options()
+        while not move:
+            try:
+                column = int(input())
+                move = (column, self.board[column])
+                assert type(move) is tuple
+                assert len(move) == 2
+                assert move[0] in column_options
+            except Exception:
+                move = None
+        return move
 
-    def compute_state(self):
+    def _get_bot_move(
+        self,
+        simulation_count: int = MonteCarloBot.SIMULATION_COUNT,
+        explore_depth: int = MonteCarloBot.EXPLORE_DEPTH,
+    ) -> Tuple[int, int]:
+        move = None
+        column_options = self.get_column_options()
+        while not move:
+            try:
+                move = MonteCarloBot(
+                    game=self,
+                    simulation_count=simulation_count,
+                    explore_depth=explore_depth).get_move()
+                assert type(move) is tuple
+                assert len(move) == 2
+                assert move[0] in column_options
+            except Exception:
+                move = None
+        return move
+
+    def _compute_state(self):
         if self.is_over and self.should_export:
-            self.export_result()
+            filename = self.export()
+            logging.info('Connect Four game result is exported to %s', filename)
         if self.is_won:
             logging.info('Congratulations %s is the winner in %s moves.', self.player, self.moves_count)
         elif self.is_full:
             logging.info('Too bad the game is tied after %s moves.', self.moves_count)
         else:
-            logging.info('All moves %s', self.moves)
             self.next_player()
-
-    def export_result(self):
-        filename = self.export()
-        logging.info('Connect Four game result is exported to %s', filename)

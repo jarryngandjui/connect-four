@@ -37,7 +37,7 @@ def main():
     elif args.players == 2:
         game.start_two_players()
     elif args.replay:
-        ConnectFour.replay_game(
+        ConnectFour.start_game_replay(
             filename=args.replay,
             debug=args.debug,
             should_export=args.should_export

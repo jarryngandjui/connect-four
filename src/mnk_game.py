@@ -54,19 +54,6 @@ class AbstractMNKGame():
     def get_next_player(self) -> str:
         return AbstractMNKGame.PLAYER_2 if self.player == AbstractMNKGame.PLAYER_1 else AbstractMNKGame.PLAYER_1
 
-    def get_move(self) -> Tuple[int, int]:
-        move = None
-        column_options = self.get_column_options()
-        while not move:
-            logging.info('%s please enter your next move from options: %s', self.player, column_options)
-            try:
-                column = int(input())
-                assert column in column_options
-                move = (column, self.board[column])
-            except Exception:
-                move = None
-        return move
-
     def play(self, move: Tuple[int, int]):
         column_options = self.get_column_options()
         assert move[0] in column_options, f'Bad move {move}, please select from {column_options}.' 
@@ -76,7 +63,7 @@ class AbstractMNKGame():
         self.is_full = self.moves_count >= self.column_max * self.row_max
         self.is_won = self.is_connected(move)
         self.winner = self.player if self.is_won else None
-        self.is_tied = self.is_full and not self.is_won 
+        self.is_tied = self.is_full and not self.is_won
         self.is_over = self.is_tied or self.is_won
 
     def is_connected(self, move: Tuple[int, int]) -> bool:
@@ -145,7 +132,7 @@ class AbstractMNKGame():
                 return True
         return False
 
-    def display_start(self):
+    def start(self):
         logging.info('Starting a game of %s with board size', self.name)
         logging.info('Creating of a board size of %sx%s', self.column_max, self.row_max)
         logging.info('First to connect %s wins...', self.target)

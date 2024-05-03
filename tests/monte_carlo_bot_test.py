@@ -4,7 +4,7 @@ from src.mnk_game import AbstractMNKGame
 from src.monte_carlo_bot import MonteCarloTreeSearchNode, MonteCarloBot
 
 
-class MonteCarloTreeSearchTestCase(TestCase):
+class TestMonteCarloTreeSearch(TestCase):
     def setUp(self):
         self.game = AbstractMNKGame(5, 6, 4)
 
@@ -54,7 +54,7 @@ class MonteCarloTreeSearchTestCase(TestCase):
         self.assertIn(top_move[1], range(game.row_max))
 
 
-class MonteCarloBotTestCase(TestCase):
+class TestMonteCarloBot(TestCase):
     def test_get_next_move(self):
         game = AbstractMNKGame(3, 3, 3)
         bot = MonteCarloBot(game)
