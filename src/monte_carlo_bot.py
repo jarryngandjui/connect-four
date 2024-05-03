@@ -19,6 +19,7 @@ class MonteCarloTreeSearchNode():
         self.mcts_player = mcts_player
         self.simulation_count = simulation_count
         self.explore_depth = explore_depth
+        self.is_searched = False
         self.games_won = 0
         self.games_lost = 0
         self.games_tied = 0
@@ -54,20 +55,30 @@ class MonteCarloTreeSearchNode():
     def tree_search(self):
         if self.game.is_over or not self.explore_depth:
             return
+        if self.is_searched:
+            self._tree_search_top_child()
+            return
+
+        self.is_searched = True
+        self.explore()
+        self.simulate()
+        self._tree_search_top_child()
+
+    def _tree_search_top_child(self):
+        if not self.is_searched:
+            return
         top_child_node = self.get_top_child_node()
         if top_child_node:
             top_child_node.tree_search()
-            return
-
-        self.explore()
-        self.simulate()
-        self.get_top_child_node().tree_search()
 
     def explore(self):
         '''
         Create a child node for each move option possible by the current player,
         in the new node, update the game state, player, and parent.
         '''
+        if self.child_nodes:
+            return
+
         column_options = self.game.get_column_options()
         for column in column_options:
             game_copy = copy.deepcopy(self.game)
@@ -89,6 +100,9 @@ class MonteCarloTreeSearchNode():
         the game reaches an end state.
         '''
         for child in self.child_nodes:
+            if child.games_total:
+                continue
+
             for _ in range(self.simulation_count):
                 child._run_simulation(copy.deepcopy(child.game))
                 child.backpropagate(
