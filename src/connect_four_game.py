@@ -82,12 +82,13 @@ class ConnectFour(AbstractMNKGame):
 
         def move_callback():
             move_i = len(live_replay.moves[live_replay.player])
-            if debug:
-                input('Press Enter to continue...\n')
             if len(var_replay.moves[live_replay.player]) <= move_i:
                 logging.info('Player %s is out of moves', live_replay)
-                return None
-            return var_replay.moves[live_replay.player][move_i]
+                return live_replay._get_input_move()
+            else:
+                if debug:
+                    input('Press Enter to continue...\n')
+                return var_replay.moves[live_replay.player][move_i]
 
         logging.info('Starting a VAR replay for the ConnectFour game export - %s', filename)
         live_replay._live_game(move_callback)

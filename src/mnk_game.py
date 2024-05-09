@@ -2,7 +2,7 @@ import json
 import logging
 import math
 import os
-from typing import List, Tuple
+from typing import Callable, List, Tuple
 from uuid import uuid4
 
 
@@ -73,61 +73,89 @@ class AbstractMNKGame():
         if len(player_moves_in_target) < self.target:
             return False
         return (
-            self.is_diagonally_connected(move, player_moves=player_moves_in_target)
-            or self.is_horizontally_connected(move, player_moves=player_moves_in_target)
+            self.is_horizontally_connected(move, player_moves=player_moves_in_target)
             or self.is_vertically_connected(move, player_moves=player_moves_in_target)
+            or self.is_positive_diagonally_connected(move, player_moves=player_moves_in_target)
+            or self.is_negative_diagonally_connected(move, player_moves=player_moves_in_target)
         )
 
     def is_horizontally_connected(self, move: Tuple[int, int], player_moves: List[Tuple[int, int]]=[]) -> bool:
-        player_moves = list(filter(lambda m: m[1] == move[1], player_moves))
-        player_moves = sorted(player_moves, key=lambda m: m[0])
-        connected_plays = 1
-
-        if not len(player_moves) >= self.target:
-            return False
-
-        for i in range(len(player_moves)-1):
-            if player_moves[i][0]+1 == player_moves[i+1][0]:
-                connected_plays += 1
-            else:
-                connected_plays = 1
-            if connected_plays >= self.target:
-                return True
-        return False
+        return self._is_connected_base(
+            move,
+            player_moves,
+            sort_key_cb=lambda a: a[0],
+            is_linear_cb=lambda a, b: a[1] == b[1],
+            is_continuous_cb=lambda a, b: b[0] == a[0] + 1
+        )
 
     def is_vertically_connected(self, move: Tuple[int, int], player_moves: List[Tuple[int, int]]=[]) -> bool:
-        player_moves = list(filter(lambda m: m[0]==move[0], player_moves))
-        player_moves = sorted(player_moves, key=lambda m: m[1])
-        connected_plays = 1
+        return self._is_connected_base(
+            move,
+            player_moves,
+            sort_key_cb=lambda a: a[1],
+            is_linear_cb=lambda a, b: a[0] == b[0],
+            is_continuous_cb=lambda a, b: b[1] == a[1] + 1
+        )
 
-        if not len(player_moves) >= self.target:
-            return False
-
-        for i in range(len(player_moves)-1):
-            if player_moves[i][1]+1 == player_moves[i+1][1]:
-                connected_plays += 1
-            else:
-                connected_plays = 1
-            if connected_plays >= self.target:
+    def is_positive_diagonally_connected(self, move: Tuple[int, int], player_moves: List[Tuple[int, int]]=[]) -> bool:
+        def is_positive_slope(a: Tuple[int, int], b: Tuple[int, int]) -> bool:
+            if a == b:
+                # include the last move
                 return True
-        return False
+            elif not a[0] - b[0]:
+                # division by zero in slope formula
+                return False
+            else:
+                return (b[1] - a[1]) / (b[0]-a[0]) == 1
 
-    def is_diagonally_connected(self, move: Tuple[int, int], player_moves: List[Tuple[int, int]]=[]) -> bool:
-        player_moves = list(filter(lambda m: abs(m[1]-move[1])==abs(m[0]-move[0]), player_moves))
-        player_moves = sorted(player_moves, key=lambda m: (m[0], m[1]))
+        return self._is_connected_base(
+            move,
+            player_moves,
+            sort_key_cb=lambda a: (a[0], a[1]),
+            is_linear_cb=is_positive_slope,
+            is_continuous_cb=lambda a, b: b[0] - a[0] == 1 and b[1] - a[1] == 1
+        )
+
+    def is_negative_diagonally_connected(self, move: Tuple[int, int], player_moves: List[Tuple[int, int]]=[]) -> bool:
+        def is_negative_slope(a: Tuple[int, int], b: Tuple[int, int]) -> bool:
+            if a == b:
+                # include the last move
+                return True
+            elif not a[0] - b[0]:
+                # division by zero in slope formula
+                return False
+            else:
+                return (b[1] - a[1]) / (b[0]-a[0]) == -1
+
+        return self._is_connected_base(
+            move,
+            player_moves,
+            sort_key_cb=lambda a: (a[1], a[0]),
+            is_linear_cb=is_negative_slope,
+            is_continuous_cb=lambda a, b: a[0] - b[0] == 1 and a[1] - b[1] == -1
+        )
+
+    def _is_connected_base(
+            self, move: Tuple[int, int],
+            player_moves: List[Tuple[int, int]],
+            sort_key_cb: Callable=None,
+            is_linear_cb: Callable[[Tuple, Tuple], bool]=None,
+            is_continuous_cb: Callable[[Tuple, Tuple], bool]=None,
+    ) -> bool:
+        assert sort_key_cb, "sort_key_cb must be callable"
+        assert is_linear_cb, "is_linear_cb must be callable"
+        assert is_continuous_cb, "is_continuous_cb must be callable"
+
+        player_moves = list(filter(lambda m: is_linear_cb(m, move), player_moves))
+        player_moves = sorted(player_moves, key=lambda m: sort_key_cb(m))
         connected_plays = 1
 
         if not len(player_moves) >= self.target:
             return False
 
-        for i in range(len(player_moves)-1):
-            if (
-                abs(player_moves[i][0] - player_moves[i+1][0]) == 1
-                and abs(player_moves[i][1] - player_moves[i+1][1]) == 1
-            ):
-                connected_plays += 1
-            else:
-                connected_plays = 1
+        for i in range(1, len(player_moves)):
+            is_continuous = is_continuous_cb(player_moves[i-1], player_moves[i])
+            connected_plays = connected_plays + 1 if is_continuous else 1
             if connected_plays >= self.target:
                 return True
         return False
