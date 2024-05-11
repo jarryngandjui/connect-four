@@ -29,7 +29,6 @@ class ConnectFour(AbstractMNKGame):
 
     @classmethod
     def play_in_game_audio(cls):
-        time.sleep(0.5)
         pygame.mixer.init()
         pygame.mixer.music.load(ConnectFour.IN_GAME_AUDIO)
         pygame.mixer.music.play()
@@ -39,7 +38,6 @@ class ConnectFour(AbstractMNKGame):
         pygame.mixer.init()
         pygame.mixer.music.load(ConnectFour.GAME_OVER_AUDIO)
         pygame.mixer.music.play()
-        time.sleep(2)
 
     @classmethod
     def play_move_audio(cls):
@@ -100,6 +98,7 @@ class ConnectFour(AbstractMNKGame):
             while not self.is_over:
                 logging.info('%s please enter your next move from options: %s', self.player, self.get_column_options())
                 if self.has_volume:
+                    time.sleep(0.5)
                     ConnectFour.play_in_game_audio()
                 self.play(move_callback())
                 if self.has_volume:
@@ -111,6 +110,7 @@ class ConnectFour(AbstractMNKGame):
 
         if self.has_volume:
             ConnectFour.play_game_over_audio()
+            time.sleep(2)
             ConnectFour.stop_audio()
 
     def _get_input_move(self) -> Tuple[int, int]:
