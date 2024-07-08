@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connect Four</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+      }
+      #game {
+        display: grid;
+        grid-template-columns: repeat(7, 50px);
+        gap: 5px;
+        background-color: #333;
+        padding: 10px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
+      .cell {
+        width: 50px;
+        height: 50px;
+        background-color: #fff;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .X {
+        background-color: red;
+      }
+      .O {
+        background-color: blue;
+      }
+      .column {
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Connect Four</h1>
+    <div id="game"></div>
+    <div id="status"></div>
+
+    <script>
+      const gameData = {{ game_data|tojson }};
+
+      const currentGame = JSON.parse(JSON.stringify(gameData));
+      const gameElement = document.getElementById('game');
+      const statusElement = document.getElementById('status');
+      const columns = Array.from({ length: currentGame.column_max }, () => []);
+
+      function renderGame(data) {
+          gameElement.innerHTML = '';
+
+          for (let r = data.row_max - 1; r >= 0; r--) {
+              for (let c = 0; c < data.column_max; c++) {
+                  const cell = document.createElement('div');
+                  cell.classList.add('cell');
+                  cell.dataset.row = r;
+                  cell.dataset.column = c;
+                  cell.addEventListener('click', () => handleColumnClick(c));
+                  gameElement.appendChild(cell);
+              }
+          }
+
+          for (const player in data.moves) {
+              data.moves[player].forEach(([column, row]) => {
+                  const cell = document.querySelector(`.cell[data-row="${row}"][data-column="${column}"]`);
+                  cell.classList.add(player);
+              });
+          }
+
+          statusElement.textContent = data.is_won ? `Player ${data.winner} wins!` : data.is_tied ? "It's a tie!" : '';
+      }
+
+      async function handleColumnClick(column) {
+          if (gameData.is_over) return;
+
+          const response = await fetch('/move', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ column }),
+          });
+
+          if (response.ok) {
+              const updatedGameData = await response.json();
+              Object.assign(gameData, updatedGameData);
+              renderGame(gameData);
+          } else {
+              const error = await response.json();
+              console.error(error.error);
+          }
+      }
+
+      renderGame(currentGame);
+    </script>
+  </body>
+</html>

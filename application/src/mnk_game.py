@@ -190,21 +190,7 @@ class AbstractMNKGame():
 
     def export(self) -> str:
         filename = f'{uuid4()}.json'
-        game_data = {
-            'name': self.name,
-            'row_max': self.row_max,
-            'column_max': self.column_max,
-            'target': self.target,
-            'board': self.board,
-            'moves': self.moves,
-            'player': self.player,
-            'moves_count': self.moves_count,
-            'is_won': self.is_won,
-            'is_tied': self.is_tied,
-            'is_full': self.is_full,
-            'is_over': self.is_over,
-            'winner': self.winner
-        }
+        game_data = self.to_dict()
         with open(os.path.join(AbstractMNKGame.EXPORT_DIR, filename), 'w') as f:
             json.dump(game_data, f, indent=4)
         return filename
@@ -232,6 +218,23 @@ class AbstractMNKGame():
             moves = [(m[0], m[1]) for m in moves]
             game.moves[p] = moves
         return game
+
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'row_max': self.row_max,
+            'column_max': self.column_max,
+            'target': self.target,
+            'board': self.board,
+            'moves': self.moves,
+            'player': self.player,
+            'moves_count': self.moves_count,
+            'is_won': self.is_won,
+            'is_tied': self.is_tied,
+            'is_full': self.is_full,
+            'is_over': self.is_over,
+            'winner': self.winner
+        }
 
     def __copy__(self):
         new_instance = self.__class__(self.row_max, self.column_max, self.target, self.name)

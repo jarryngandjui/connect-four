@@ -6,7 +6,7 @@ The game should support two players (X, O) until there is one winner. Connect fo
 
 ## Features
 
-- ConnectFour 1 player vs. bot opponent that uses a Monte Carlo Tree Search to pick the next move
+- ConnectFour 1 player vs. bot opponent that uses a Monte Carlo Tree Search (MCTS) to pick the next move
 - ConnectFour 2 players locally
 - In game audio
 - Export the game state
@@ -20,15 +20,18 @@ The game should support two players (X, O) until there is one winner. Connect fo
 - Create a virtual env `python -m venv venv`
 - Activate the virtual env `source ./venv/bin/activate`
 - Install requirements `pip install -r requirements.txt`
-- Play 1 player vs. bot
+- Play 1 player vs. bot on a web ui 
+  - `python application/server.py`
+  - Navigate to http://localhost:3000/ to play against the MCTS bot
+- Play 1 player vs. bot on the terminal
   - `python main.py --players 1`
   - optional arg `--simulation_count N` to control the competitiveness of the bot, default is 30.
   - optional arg `--explore_depth N` to control how many moves ahead the bot forcasts, default is 30.
   - optional arg `--should_export True` saves the final game state in a export/{uuid4}.json file to be replayed.
-- Play 2 players
+- Play 2 players on the terminal
   - `python main.py --players 2`
   - optional arg `--should_export True` saves the final game state in a export/{uuid4}.json file to be replayed.
-- Replay exported game
+- Replay exported game on the terminal
   - `python main.py --replay {uuid4}.json`
   - optional arg `--debug True` enables a step through debugger for each move.
   - optional arg `--should_export True` saves the final game state in a export/{uuid4}.json file to be replayed.
