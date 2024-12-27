@@ -1,7 +1,7 @@
 import copy
 import logging
 from random import randint
-from typing import List, Optional, Tuple
+from typing import Optional
 
 from src.mnk_game import AbstractMNKGame
 
@@ -24,7 +24,7 @@ class MonteCarloTreeSearchNode():
         self.games_lost = 0
         self.games_tied = 0
         self.games_total = 0
-        self.child_nodes: List[MonteCarloTreeSearchNode] = []
+        self.child_nodes: list[MonteCarloTreeSearchNode] = []
 
     def get_win_rate(self) -> float:
         return float(self.games_won/self.games_total) if self.games_total else 0.0
@@ -44,7 +44,7 @@ class MonteCarloTreeSearchNode():
                 top_child_node = c
         return top_child_node
 
-    def get_top_move(self) -> Optional[Tuple[int, int]]:
+    def get_top_move(self) -> Optional[tuple[int, int]]:
         '''
         Top move is the last move made on the highest ranked
         child node.
@@ -176,7 +176,7 @@ class MonteCarloBot():
         )
         self.should_play_defensive = False
 
-    def get_move(self) -> Optional[Tuple[int, int]]:
+    def get_move(self) -> Optional[tuple[int, int]]:
         self.mcts_palyer_root.tree_search()
         self.other_player_root.tree_search()
         self.should_play_defensive = self.mcts_palyer_root.get_win_rate() < self.other_player_root.get_win_rate()

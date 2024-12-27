@@ -2,7 +2,7 @@ import json
 import logging
 import math
 import os
-from typing import Callable, List, Tuple
+from typing import Callable
 from uuid import uuid4
 
 logging.basicConfig(level=logging.INFO)
@@ -10,8 +10,8 @@ logging.basicConfig(level=logging.INFO)
 
 class AbstractMNKGame():
     '''
-    An m,n,k-game is an abstract board game in which two players take turns 
-    in placing a stone of their color on an m-by-n board, the winner being 
+    An m,n,k-game is an abstract board game in which two players take turns
+    in placing a stone of their color on an m-by-n board, the winner being
     the player who first gets k stones of their own color in a row,
     horizontally, vertically, or diagonally.
     '''
@@ -41,10 +41,10 @@ class AbstractMNKGame():
         self.is_over = False
         self.winner = None
 
-    def get_player_moves(self, player) -> List[Tuple[int, int]]:
+    def get_player_moves(self, player) -> list[tuple[int, int]]:
         return self.moves.get(player, [])
 
-    def get_column_options(self) -> List[int]:
+    def get_column_options(self) -> list[int]:
         return [c for c in range(self.column_max) if self.board[c] < self.row_max]
 
     def next_player(self):
@@ -53,7 +53,7 @@ class AbstractMNKGame():
     def get_next_player(self) -> str:
         return AbstractMNKGame.PLAYER_2 if self.player == AbstractMNKGame.PLAYER_1 else AbstractMNKGame.PLAYER_1
 
-    def play(self, move: Tuple[int, int]):
+    def play(self, move: tuple[int, int]):
         column_options = self.get_column_options()
         assert move[0] in column_options, f'Bad move {move}, please select from {column_options}.'
         self.get_player_moves(self.player).append(move)
@@ -65,7 +65,7 @@ class AbstractMNKGame():
         self.is_tied = self.is_full and not self.is_won
         self.is_over = self.is_tied or self.is_won
 
-    def is_connected(self, move: Tuple[int, int]) -> bool:
+    def is_connected(self, move: tuple[int, int]) -> bool:
         player_moves = self.get_player_moves(self.player)
         player_moves_in_target = [m for m in player_moves if int(math.dist(m, move)) <= self.target]
 
@@ -78,7 +78,7 @@ class AbstractMNKGame():
             or self.is_negative_diagonally_connected(move, player_moves=player_moves_in_target)
         )
 
-    def is_horizontally_connected(self, move: Tuple[int, int], player_moves: List[Tuple[int, int]]=[]) -> bool:
+    def is_horizontally_connected(self, move: tuple[int, int], player_moves: list[tuple[int, int]]=[]) -> bool:
         return self._is_connected_base(
             move,
             player_moves,
@@ -87,7 +87,7 @@ class AbstractMNKGame():
             is_continuous_cb=lambda a, b: b[0] == a[0] + 1
         )
 
-    def is_vertically_connected(self, move: Tuple[int, int], player_moves: List[Tuple[int, int]]=[]) -> bool:
+    def is_vertically_connected(self, move: tuple[int, int], player_moves: list[tuple[int, int]]=[]) -> bool:
         return self._is_connected_base(
             move,
             player_moves,
@@ -96,8 +96,8 @@ class AbstractMNKGame():
             is_continuous_cb=lambda a, b: b[1] == a[1] + 1
         )
 
-    def is_positive_diagonally_connected(self, move: Tuple[int, int], player_moves: List[Tuple[int, int]]=[]) -> bool:
-        def is_positive_slope(a: Tuple[int, int], b: Tuple[int, int]) -> bool:
+    def is_positive_diagonally_connected(self, move: tuple[int, int], player_moves: list[tuple[int, int]]=[]) -> bool:
+        def is_positive_slope(a: tuple[int, int], b: tuple[int, int]) -> bool:
             if a == b:
                 # include the last move
                 return True
@@ -115,8 +115,8 @@ class AbstractMNKGame():
             is_continuous_cb=lambda a, b: b[0] - a[0] == 1 and b[1] - a[1] == 1
         )
 
-    def is_negative_diagonally_connected(self, move: Tuple[int, int], player_moves: List[Tuple[int, int]]=[]) -> bool:
-        def is_negative_slope(a: Tuple[int, int], b: Tuple[int, int]) -> bool:
+    def is_negative_diagonally_connected(self, move: tuple[int, int], player_moves: list[tuple[int, int]]=[]) -> bool:
+        def is_negative_slope(a: tuple[int, int], b: tuple[int, int]) -> bool:
             if a == b:
                 # include the last move
                 return True
@@ -135,11 +135,11 @@ class AbstractMNKGame():
         )
 
     def _is_connected_base(
-            self, move: Tuple[int, int],
-            player_moves: List[Tuple[int, int]],
+            self, move: tuple[int, int],
+            player_moves: list[tuple[int, int]],
             sort_key_cb: Callable=None,
-            is_linear_cb: Callable[[Tuple, Tuple], bool]=None,
-            is_continuous_cb: Callable[[Tuple, Tuple], bool]=None,
+            is_linear_cb: Callable[[tuple, tuple], bool]=None,
+            is_continuous_cb: Callable[[tuple, tuple], bool]=None,
     ) -> bool:
         assert sort_key_cb, "sort_key_cb must be callable"
         assert is_linear_cb, "is_linear_cb must be callable"

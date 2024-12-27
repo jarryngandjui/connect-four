@@ -1,7 +1,7 @@
 import logging
 import os
 import time
-from typing import Callable, Tuple
+from typing import Callable
 
 import pygame
 
@@ -128,7 +128,7 @@ class ConnectFour(AbstractMNKGame):
             time.sleep(2)
             ConnectFour.stop_audio()
 
-    def _get_input_move(self) -> Tuple[int, int]:
+    def _get_input_move(self) -> tuple[int, int]:
         move = None
         column_options = self.get_column_options()
         while not move:
@@ -146,7 +146,7 @@ class ConnectFour(AbstractMNKGame):
         self,
         simulation_count: int = MonteCarloBot.SIMULATION_COUNT,
         explore_depth: int = MonteCarloBot.EXPLORE_DEPTH,
-    ) -> Tuple[int, int]:
+    ) -> tuple[int, int]:
         move = None
         column_options = self.get_column_options()
         while not move:
