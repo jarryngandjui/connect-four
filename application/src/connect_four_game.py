@@ -1,13 +1,14 @@
 import logging
 import os
-import pygame
 import time
-
 from typing import Callable, Tuple
 
-from src.monte_carlo_bot import MonteCarloBot
-from src.mnk_game import AbstractMNKGame
+import pygame
 
+from src.mnk_game import AbstractMNKGame
+from src.monte_carlo_bot import (
+    MonteCarloBot,
+)
 
 logging.basicConfig(level=logging.INFO)
 

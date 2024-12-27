@@ -1,7 +1,10 @@
 from unittest import TestCase
 
 from src.mnk_game import AbstractMNKGame
-from src.monte_carlo_bot import MonteCarloTreeSearchNode, MonteCarloBot
+from src.monte_carlo_bot import (
+    MonteCarloBot,
+    MonteCarloTreeSearchNode,
+)
 
 
 class TestMonteCarloTreeSearch(TestCase):

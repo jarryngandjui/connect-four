@@ -5,7 +5,6 @@ import os
 from typing import Callable, List, Tuple
 from uuid import uuid4
 
-
 logging.basicConfig(level=logging.INFO)
 
 
@@ -56,7 +55,7 @@ class AbstractMNKGame():
 
     def play(self, move: Tuple[int, int]):
         column_options = self.get_column_options()
-        assert move[0] in column_options, f'Bad move {move}, please select from {column_options}.' 
+        assert move[0] in column_options, f'Bad move {move}, please select from {column_options}.'
         self.get_player_moves(self.player).append(move)
         self.board[move[0]] += 1
         self.moves_count += 1
@@ -67,8 +66,8 @@ class AbstractMNKGame():
         self.is_over = self.is_tied or self.is_won
 
     def is_connected(self, move: Tuple[int, int]) -> bool:
-        player_moves = self.get_player_moves(self.player) 
-        player_moves_in_target = [m for m in player_moves if int(math.dist(m, move)) <= self.target] 
+        player_moves = self.get_player_moves(self.player)
+        player_moves_in_target = [m for m in player_moves if int(math.dist(m, move)) <= self.target]
 
         if len(player_moves_in_target) < self.target:
             return False

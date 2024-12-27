@@ -1,7 +1,15 @@
-from flask import Flask, session, request, url_for, redirect, render_template_string, render_template, jsonify
 import logging
 
-from src.connect_four_game import ConnectFour
+from flask import (
+    Flask,
+    jsonify,
+    render_template,
+    request,
+    session,
+)
+from src.connect_four_game import (
+    ConnectFour,
+)
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s : %(message)s')
 
@@ -26,7 +34,7 @@ def move():
         return jsonify({"error": "no column provided"}), 400
     if column < 0 or column > game.column_max - 1:
         return jsonify({"error": "Column is out of bound"}), 400
-    if not column in game.get_column_options():
+    if column not in game.get_column_options():
         return jsonify({"error": "Column is full"}), 400
 
     game.play((column, game.board[column]))

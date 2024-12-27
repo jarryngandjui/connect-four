@@ -1,7 +1,9 @@
 import argparse
 import logging
-from src.connect_four_game import ConnectFour
 
+from src.connect_four_game import (
+    ConnectFour,
+)
 
 logging.basicConfig(level=logging.INFO)
 
