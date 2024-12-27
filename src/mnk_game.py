@@ -16,13 +16,12 @@ class AbstractMNKGame():
     horizontally, vertically, or diagonally.
     '''
 
-
     PLAYER_1 = 'X'
     PLAYER_2 = 'O'
     PLAYERS = [PLAYER_1, PLAYER_2]
     EXPORT_DIR = 'export'
 
-    def __init__(self, m: int, n: int, k: int, name: str =''):
+    def __init__(self, m: int, n: int, k: int, name: str = ''):
         assert k > 1, 'Players must win in at least 2 connected moves'
         assert n <= 9, 'Column size must be less than or equal to 9 to display properly'
         assert m >= k and n >= k, f'Diagonal connected wins is not possible m-n-k config {m}-{n}-{k}'
@@ -199,11 +198,8 @@ class AbstractMNKGame():
         filepath = os.path.join(cls.EXPORT_DIR, filename)
         with open(filepath, 'r') as f:
             data = json.load(f)
-        game = cls()
+        game = cls(data['row_max'], data['column_max'], data['target'])
         game.name = data['name']
-        game.row_max = data['row_max']
-        game.column_max = data['column_max']
-        game.target = data['target']
         game.board = data['board']
         game.player = data['player']
         game.moves_count = data['moves_count']

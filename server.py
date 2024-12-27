@@ -7,6 +7,7 @@ from flask import (
     request,
     session,
 )
+
 from src.connect_four_game import (
     ConnectFour,
 )

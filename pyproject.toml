@@ -1,7 +1,10 @@
-line-length = 40
+[project]
+name = "Connect Four"
 
-lint.select = [
-    # if adding a rule here that affects a sizeable portion of a codebase - consider adding it to ruff.precommit.toml first.
+[tool.ruff]
+line-length = 140
+
+select = [
     "ANN001",
     "C4",
     "COM818",
@@ -79,7 +82,7 @@ lint.select = [
     "W605",
 ]
 
-lint.ignore = [
+ignore = [
     "C413",
     "E266",
     "E741",
